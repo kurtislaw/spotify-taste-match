@@ -177,3 +177,12 @@ def shared_artists_ranked(uri1, uri2):
     print('ARTIST | TOTAL | P1 AMOUNT | P2 AMOUNT')
     for artist in newlist:
             print(f'{artist.name} | {artist.total_amount} | {artist.p1_amount} | {artist.p2_amount}')
+
+def do_they_listen_to(user_uri, artist_uri):
+    """Returns whether a user listens to a specific artist"""
+    artists = get_all_artists_from_person(user_uri)
+    artist_name = sp.artist(artist_uri)['name']
+    if artist_name in artists:
+        print(f'They do listen. They have appeared {artists.count(artist_name)} times in their playlists!')
+    else:
+        print("They don't listen :(")
