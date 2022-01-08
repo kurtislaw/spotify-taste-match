@@ -26,7 +26,7 @@ class Track:
     """Class for a track's useful Spotify data."""
     name: str
     uri: str
-    artists: tuple
+    artists: list
 
 
 @dataclass
@@ -55,7 +55,7 @@ def get_public_playlists(user: str) -> List[Playlist]:
 
 
 def get_playlist_tracks(pl_id: str):
-    """Get all the tracks within a playlist""""
+    """Get all the tracks within a playlist"""
     tracks_paginated = []
     offset = 0
     while True:
@@ -143,6 +143,13 @@ def get_artist_dic(uri):
     artists = get_all_artists_from_person(uri)
     return {artist: artists.count(artist) for artist in artists}
 
+@dataclass
+class SharedArtist:
+    name: str
+    p1_amount: int
+    p2_amount: int
+    total_amount: int
+
 
 def shared_artists_ranked(uri1, uri2):
     """Returns a ranked list of two user's common artists."""
@@ -151,10 +158,22 @@ def shared_artists_ranked(uri1, uri2):
 
     intersect = set(p1_dic).intersection(set(p2_dic))
 
-    print(
-        f'Out of the {len(p1_dic) + len(p2_dic)} artists you listen to, you share {len(intersect)} in common.')
+    # print(f'Out of the {len(p1_dic) + len(p2_dic)} artists you listen to, you share {len(intersect)} in common.')
+    
+    # for artist in intersect:
+    #     p1_amount = p1_dic[artist]
+    #     p2_amount = p2_dic[artist]
+    #     print(f'{artist} | {p1_amount + p2_amount} | {p1_amount} | {p2_amount}')
+    shared_artists = [SharedArtist(
+                name=artist,
+                p1_amount=p1_dic[artist],
+                p2_amount=p2_dic[artist],
+                total_amount=p1_dic[artist]+p2_dic[artist]
+            ) for artist in intersect]
+    
+    newlist = sorted(shared_artists, key=lambda x: x.total_amount, reverse=True)
+
+    print(f'Out of the {len(p1_dic) + len(p2_dic)} artists you listen to, you share {len(intersect)} in common.')
     print('ARTIST | TOTAL | P1 AMOUNT | P2 AMOUNT')
-    for artist in intersect:
-        p1_amount = p1_dic[artist]
-        p2_amount = p2_dic[artist]
-        print(f'{artist} | {p1_amount + p2_amount} | {p1_amount} | {p2_amount}')
+    for artist in newlist:
+            print(f'{artist.name} | {artist.total_amount} | {artist.p1_amount} | {artist.p2_amount}')
