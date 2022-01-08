@@ -78,7 +78,7 @@ def get_playlist_tracks(pl_id: str):
                           artists=get_all_artists_on_track(
                         track['track']['artists']),
                         uri=track['track']['uri'])
-                    )
+                )
     return output
 
 
@@ -86,10 +86,9 @@ def get_all_artists_on_track(artists: list) -> list:
     return [artist['name'] for artist in artists]
 
 
-
 def compile_data(user_uri) -> Person:
     """Return a Person object from a uri input"""
-    
+
     playlists = []
     for playlist in get_public_playlists(user_uri):
         playlist.tracks = get_playlist_tracks(playlist.uri)
@@ -99,3 +98,74 @@ def compile_data(user_uri) -> Person:
         playlists=playlists,
         name=sp.user(user_uri)['display_name']
     )
+
+
+def shared_artists(uri1, uri2):
+    def all_artits_in_playlist(playlist_uri):
+        all_artists = []
+        for track in get_playlist_tracks(playlist_uri):
+            for artist in track.artists:
+                all_artists.append(artist)
+        return all_artists
+
+    u1_artists = all_artits_in_playlist(uri1)
+    u2_artists = all_artits_in_playlist(uri2)
+
+    u1_dic = {artist: u1_artists.count(artist) for artist in set(u1_artists)}
+    u2_dic = {artist: u2_artists.count(artist) for artist in set(u2_artists)}
+
+    intersects = set(u1_artists).intersection(set(u2_artists))
+
+    for artist in intersects:
+        print(f'{artist} - u1: {u1_dic[artist]} - u2: {u2_dic[artist]}')
+
+    print(f'Here are all the artists you both listen to:')
+    print(f'ARTIST | TOTAL TRACKS | P1 TRACKS | P2 TRACKS')
+
+
+def shared_songs(uri1, uri2):
+    u1_songs = get_all_tracks_from_person(uri1)
+    u2_songs = get_all_tracks_from_person(uri2)
+
+    intersects = set(u1_songs).intersection(set(u2_songs))
+    print(intersects)
+    print(f'Out of the {len(u1_songs) + len(u2_songs)} songs in both of your public playlists, you share {len(intersects)} in common.')
+    
+
+def get_all_tracks_from_person(uri):
+    playlists = get_public_playlists(uri)
+    all_playlist_objects = [get_playlist_tracks(playlist.uri) for playlist in playlists]
+    all_tracks = []
+    for playlist in all_playlist_objects:
+        for track in playlist:
+            all_tracks.append(track.name)
+    return all_tracks
+
+
+def get_all_artists_from_person(uri):
+    playlists = get_public_playlists(uri)
+    all_playlist_objects = [get_playlist_tracks(playlist.uri) for playlist in playlists]
+    all_artists = []
+    for playlist in all_playlist_objects:
+        for track in playlist:
+            for artist in track.artists:
+                all_artists.append(artist)
+    return all_artists
+
+def get_artist_dic(uri):
+    artists = get_all_artists_from_person(uri)
+    return {artist: artists.count(artist) for artist in artists}
+
+
+def shared_artists_ranked(uri1, uri2):
+    p1_dic = get_artist_dic(uri1)
+    p2_dic = get_artist_dic(uri2)
+
+    intersect = set(p1_dic).intersection(set(p2_dic))
+
+    print(f'Out of the {len(p1_dic) + len(p2_dic)} artists you listen to, you share {len(intersect)} in common.')
+    print('ARTIST | TOTAL | P1 AMOUNT | P2 AMOUNT')
+    for artist in intersect:
+        p1_amount = p1_dic[artist]
+        p2_amount = p2_dic[artist]
+        print(f'{artist} | {p1_amount + p2_amount} | {p1_amount} | {p2_amount}')
